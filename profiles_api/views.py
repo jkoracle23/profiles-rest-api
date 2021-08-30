@@ -3,6 +3,9 @@ from rest_framework.response import Response# imports the Response object which 
 #from the APIview. o it's a standard response object that when you call the API view or when Django rest framework calls our API view it's expecting it to return this standard response object
 from rest_framework import status# list of handy http status code which can be used in response of apis
 from profiles_api import serializers# module creaed in profiles_api
+from rest_framework import viewsets
+
+
 
 class HelloApiView(APIView):
     """Test api view"""
@@ -53,3 +56,47 @@ class HelloApiView(APIView):
         """Delete an object"""
         #Deletes objects in the databases
         return Response({'method':"DELETE"})
+
+
+class HelloViewSet(viewsets.ViewSet):
+    """Test api view set"""
+    serializer_class=serializers.HelloSerializer #serializer that we created for our API view with the name field we can share the same serializer for both of our view sets and we specify the serializer in our view set the same way as we do for our API view and that is by
+#When we run the server the name field will appear because this serialzer class has name field
+    def list(self,request):#a list is typically a HTTP GET to the root of the endpoint linked to our view set. so what this normally would do is list a set of objects that the view set represents
+        """Return a hello message"""
+        a_viewset=[
+        'Uses actions (list, create, retrive, update,partial update)',
+        'Automatically maps to the urls using Routers ',
+        'Provides more functionality with less code',
+        ]
+        return Response({'message':'Hello! ','a_viewset':a_viewset })
+    def create(self, request):
+        """Create a new hello message"""
+        #Retrieve the sericalizer
+        serializer=self.serializer_class(data=request.data) #data equals request.data so we pass in the data that was made in the request and we passed that in as the data attribute of our serializer which we retrieve using the serializer class
+        #validate the serializer
+        if serializer.is_valid():
+            name=serializer.validated_data.get('name')
+            message=f'Hello {name}!'
+            return Response({'message':message})
+        else:
+            return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+            )
+
+
+    #retrieve function is for retrieving a specific object in our view set so you would typically pass in a primary key ID to the URL in the request and that will return or retrieve the object with that primary key ID
+    def retrive(self,request,pk=None):
+        """Handle getting an object by its ID"""
+        return Response({'http_method':'GET'})
+    #update which maps to a HTTP put on the primary key item of our view set
+    def update(self,request,pk=None):
+        """Handle updating an object"""
+        return Response({'http_method':'PUT'})
+    def partial_update(self,request,pk=None):
+        """Handle updating part of an object"""
+        return Response({'http_method':'PATCH'})
+    def destroy(self,request,pk=None):
+        """Handle removing an object"""
+        return Response({'http_method':'DELTE'})
